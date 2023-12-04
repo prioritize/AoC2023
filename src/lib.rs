@@ -1,4 +1,5 @@
 mod day_1;
+mod day_2;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
