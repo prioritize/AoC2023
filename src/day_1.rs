@@ -79,9 +79,7 @@ fn check_numeral_or_word(
     comp: fn(usize, usize) -> bool,
 ) -> u32 {
     return match matches {
-        None => {
-            numerals.unwrap().1.to_digit(10).unwrap()
-        }
+        None => numerals.unwrap().1.to_digit(10).unwrap(),
 
         Some(m) => match numerals {
             Some(n) => {
