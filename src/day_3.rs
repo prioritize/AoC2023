@@ -33,7 +33,7 @@ fn day_3_part_1(fname: &str) {
     }
 
     // Iterate the vectors to find all values that aren't numeric or periods
-    let mut symbols = vec![];
+    // let mut symbols = vec![];
     for (r_idx, r)  in schematic.iter().enumerate() {
         for (c_idx, c) in r.iter().enumerate() {
             if is_symbol(*c) {
@@ -55,10 +55,10 @@ fn check_numeric(c: char) -> Result<(), ()> {
        false => {Err(())}
    }
 }
-fn find_start_and_end(idx: usize, line: String) -> (usize, usize){
+fn find_start_and_end(idx: usize, line: &Vec<char>) -> (usize, usize){
     let chars = line.split_at(idx);
     let mut rev_offset = 0;
-    let rev = chars.0.chars().rev().try_for_each(|x| {
+    let rev = chars.0.iter().rev().try_for_each(|x| {
         if x.is_numeric() {
             rev_offset += 1;
             return Ok(())
@@ -66,7 +66,7 @@ fn find_start_and_end(idx: usize, line: String) -> (usize, usize){
         Err(())
     });
     let mut forward_offset = 0;
-    let forward = chars.1.chars().try_for_each(|x| {
+    let forward = chars.1.iter().try_for_each(|x| {
         if x.is_numeric() {
             forward_offset += 1;
             return Ok(())
@@ -77,15 +77,21 @@ fn find_start_and_end(idx: usize, line: String) -> (usize, usize){
 }
 fn check_neighborhood(loc: (usize, usize), schematic: &Vec<Vec<char>>) -> Vec<(usize, usize)> {
     let mut neighbors = vec![];
+    let mut r_idx;
+    let mut c_idx;
     for r  in -1..1 {
+        r_idx = r + loc.0 as i32;
         for c in -1..1 {
-            if r < 0 || r >= schematic.len() as i32 {
+            c_idx = c + loc.1 as i32;
+            if r_idx < 0 || r_idx >= schematic.len() as i32 {
                 continue;
             }
-            if c <= 0 || c >= schematic[0].len() as i32 {
+            if c_idx <= 0 || c_idx >= schematic[0].len() as i32 {
                 continue;
             }
             if schematic[r as usize][c as usize].is_numeric() {
+                let (start, end) = find_start_and_end(c_idx as usize, &schematic[r_idx as usize]);
+                println!("start: {}, end: {}", start, end);
                 neighbors.push((r as usize, c as usize));
             }
         }
