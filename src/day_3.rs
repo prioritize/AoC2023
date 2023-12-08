@@ -1,7 +1,6 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::collections::HashSet;
-use std::ops::Add;
 
 // TODO: Store Vector
 // TODO: Create vistor vector
@@ -21,7 +20,7 @@ fn day_3_part_1(fname: &str) {
         }
     }).collect::<Vec<Vec<char>>>();
     // Create a storage location for symbols
-    let mut visited = vec![vec![]];
+    let mut visited = vec![];
     for line in &schematic {
         let mut v = vec![];
         for c in line.iter() {
@@ -37,8 +36,12 @@ fn day_3_part_1(fname: &str) {
             if is_symbol(*c) {
                 let neighbors = build_neighborhood((r_idx, c_idx));
                 let part_numbers = neighbors.iter().map(|x|{
-                    if schematic[x.0][x.1].is_numeric() {
-                        Some(find_start_and_end((x.0, x.1), &schematic))
+                    if schematic[x.0][x.1].is_numeric() && visited[x.0][x.1] != true {
+                        let span = find_start_and_end((x.0, x.1), &schematic);
+                        visited[x.0][span.0..span.1].iter_mut().for_each(|mut x| *x = true);
+                        //TODO: Convert to finding just the front of the number, and handle passing the correct line number as well
+                        Some(concat(&schematic[r_idx][span.0..span.1]))
+                        // Some(span)
                     } else { None }
                 }).filter(Option::is_some).map(|x| {x.unwrap()});
                 for item in part_numbers {
@@ -48,6 +51,10 @@ fn day_3_part_1(fname: &str) {
         }
 
     }
+}
+
+fn concat(vec: &[char]) -> u32 {
+    vec.iter().fold(0, |acc, elem| acc * 10 + elem.to_digit(10).unwrap())
 }
 fn is_symbol(c: char) -> bool {
     if c == '.' || c.is_numeric() {
