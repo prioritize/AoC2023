@@ -17,7 +17,11 @@ impl Display for Game {
 }
 impl Display for Hand {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{{ Hand: {{r: {}, g: {}, b: {} }}}}",self.red, self.green, self.blue)
+        write!(
+            f,
+            "{{ Hand: {{r: {}, g: {}, b: {} }}}}",
+            self.red, self.green, self.blue
+        )
     }
 }
 struct Hand {
@@ -83,7 +87,7 @@ fn make_hands(input: Vec<Vec<&str>>) -> Vec<Hand> {
 fn is_valid_game(game: &Game, r: u32, g: u32, b: u32) -> bool {
     for h in &game.hands {
         if (h.red > r) || (h.green > g) || (h.blue > b) {
-            return false
+            return false;
         }
     }
     true
