@@ -1,10 +1,8 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader, Lines};
+use std::io::{BufRead, BufReader};
+use std::collections::HashSet;
+use std::ops::Add;
 
-struct Symbol {
-    r: usize,
-    c: usize,
-}
 // TODO: Store Vector
 // TODO: Create vistor vector
 // TODO: Iterate Vector to locate and store symbols
@@ -37,7 +35,15 @@ fn day_3_part_1(fname: &str) {
     for (r_idx, r)  in schematic.iter().enumerate() {
         for (c_idx, c) in r.iter().enumerate() {
             if is_symbol(*c) {
-               check_neighborhood((r_idx, c_idx), &schematic);
+                let neighbors = build_neighborhood((r_idx, c_idx));
+                let part_numbers = neighbors.iter().map(|x|{
+                    if schematic[x.0][x.1].is_numeric() {
+                        Some(find_start_and_end((x.0, x.1), &schematic))
+                    } else { None }
+                }).filter(Option::is_some).map(|x| {x.unwrap()});
+                for item in part_numbers {
+                    println!("{:?}", item)
+                }
             }
         }
 
@@ -55,9 +61,10 @@ fn check_numeric(c: char) -> Result<(), ()> {
        false => {Err(())}
    }
 }
-fn find_start_and_end(idx: usize, line: &Vec<char>) -> (usize, usize){
-    let chars = line.split_at(idx);
-    let mut rev_offset = 0;
+fn find_start_and_end(loc: (usize, usize), line: &Vec<Vec<char>>) -> (usize, usize){
+    let line = &line[loc.0];
+    let chars = line.split_at(loc.1);
+    let mut rev_offset: usize = 0;
     let rev = chars.0.iter().rev().try_for_each(|x| {
         if x.is_numeric() {
             rev_offset += 1;
@@ -73,29 +80,26 @@ fn find_start_and_end(idx: usize, line: &Vec<char>) -> (usize, usize){
         }
         Err(())
     });
-    (0, 0)
+    println!("{:?}", &line[loc.1.saturating_sub(rev_offset)..loc.1 + forward_offset]);
+    (loc.1 - rev_offset, loc.1 + forward_offset)
 }
-fn check_neighborhood(loc: (usize, usize), schematic: &Vec<Vec<char>>) -> Vec<(usize, usize)> {
-    let mut neighbors = vec![];
-    let mut r_idx;
-    let mut c_idx;
-    for r  in -1..1 {
-        r_idx = r + loc.0 as i32;
-        for c in -1..1 {
-            c_idx = c + loc.1 as i32;
-            if r_idx < 0 || r_idx >= schematic.len() as i32 {
-                continue;
-            }
-            if c_idx <= 0 || c_idx >= schematic[0].len() as i32 {
-                continue;
-            }
-            if schematic[r as usize][c as usize].is_numeric() {
-                let (start, end) = find_start_and_end(c_idx as usize, &schematic[r_idx as usize]);
-                println!("start: {}, end: {}", start, end);
-                neighbors.push((r as usize, c as usize));
-            }
+fn build_neighborhood (loc: (usize, usize), ) -> HashSet<(usize, usize)>{
+    let mut neighbors = HashSet::new();
+    for r in -1..2 {
+        let r_idx = loc.0.saturating_add_signed(r);
+        for c in -1..=1 {
+            let c_idx = loc.1.saturating_add_signed(c);
+            neighbors.insert((r_idx, c_idx));
         }
     }
+    println!("location: {}, {} - neighbors: {:?}", loc.0, loc.1, neighbors);
+    neighbors
+}
+fn check_neighborhood(loc: (usize, usize), schematic: &Vec<Vec<char>>) -> HashSet<(usize, usize)> {
+    let neighbors = build_neighborhood(loc);
+    neighbors.iter().for_each(|x| {
+        println!("{:?}", x)
+    });
     neighbors
 }
 // fn lines_to_vec(lines: Lines<BufReader<File>>) -> Vec<Vec<&str>> {

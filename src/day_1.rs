@@ -101,7 +101,7 @@ fn less(l: usize, r: usize) -> bool {
 }
 
 fn match_word_to_u32(input: &str) -> u32 {
-    return match input {
+    match input {
         "one" => 1,
         "two" => 2,
         "three" => 3,
@@ -123,5 +123,41 @@ fn match_word_to_u32(input: &str) -> u32 {
         _ => {
             panic!("Bad input passed to string_to_number")
         }
-    };
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+#[test]
+fn test_day_1_example_part_1() {
+    part_1("input/day_1_part_1_example.txt");
+}
+#[test]
+fn test_day_1_part_1() {
+    part_1("input/day_1_input.txt");
+}
+#[test]
+fn test_day_1_example_part_2() {
+    part_2("input/day_1_part_2_example.txt");
+}
+#[test]
+fn test_day_1_part_2() {
+    part_2("input/day_1_input.txt");
+}
+#[test]
+fn test_day_1_part_2_non_regex() {
+    day_1_part_2_non_regex("input/day_1_input.txt");
+}
+#[test]
+fn test_day_1_part_2_proto_non_regex() {
+    day_1_part_2_non_regex("input/day_1_input_proto.txt");
+}
+#[test]
+fn test_day_1_part_2_proto() {
+    part_2("input/day_1_input_proto.txt");
+}
+#[test]
+fn test_day_1_part_1_proto() {
+    part_1("input/day_1_input_proto.txt");
+}
 }
