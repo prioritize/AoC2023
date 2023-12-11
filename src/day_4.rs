@@ -1,5 +1,5 @@
-use std::cell::RefCell;
 use itertools::{iterate, Itertools};
+use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -32,8 +32,7 @@ fn parse_input(fname: &str) -> Game {
                 .map(|c| c.parse().unwrap())
                 .collect::<HashSet<u32>>();
 
-                (card_number.parse().unwrap(),
-                winning_numbers, game_numbers)
+            (card_number.parse().unwrap(), winning_numbers, game_numbers)
         })
         .collect::<Game>()
 }
@@ -63,29 +62,36 @@ fn day_4_part_1(fname: &str) {
 }
 fn day_4_part_2(fname: &str) {
     let cards = parse_input(fname);
-    let results = cards.iter().map(|(c, w, chance)| {
-        (usize::try_from(*c).unwrap(), check_numbers(w, chance).len())
-    }).collect::<Vec<(usize, usize)>>();
-    let results = results.iter().map(|x| {
-        (x.0.clone(), x.1.clone(), RefCell::new(1))
-    }).collect::<Vec<(usize, usize, RefCell<u32>)>>();
-    let card_counts = results.iter().map(|(card, set, count)|{
-        let start = card.clone();
-        let end = start + set;
-        for _ in 0..count.borrow().clone() {
-            &results[start..end].iter().for_each(move |(c, _, next_count)| {
-                let nc = next_count.clone().take();
-                next_count.replace(nc + 1);
-            });
-        }
-        count.take()
-    }).collect::<Vec<u32>>();
+    let results = cards
+        .iter()
+        .map(|(c, w, chance)| (usize::try_from(*c).unwrap(), check_numbers(w, chance).len()))
+        .collect::<Vec<(usize, usize)>>();
+    let results = results
+        .iter()
+        .map(|x| (x.0.clone(), x.1.clone(), RefCell::new(1)))
+        .collect::<Vec<(usize, usize, RefCell<u32>)>>();
+    let card_counts = results
+        .iter()
+        .map(|(card, set, count)| {
+            let start = card.clone();
+            let end = start + set;
+            for _ in 0..count.borrow().clone() {
+                &results[start..end]
+                    .iter()
+                    .for_each(move |(c, _, next_count)| {
+                        let nc = next_count.clone().take();
+                        next_count.replace(nc + 1);
+                    });
+            }
+            count.take()
+        })
+        .collect::<Vec<u32>>();
     println!("total cards: {}", card_counts.iter().sum::<u32>())
 }
 
 #[cfg(test)]
 mod tests {
-use super::*;
+    use super::*;
     #[test]
     fn test_parse_input() {
         parse_input("input/day_4_input.txt");
