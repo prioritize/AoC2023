@@ -44,7 +44,9 @@ fn find_part_numbers(schematic: &Vec<Vec<char>>, visited: &mut Vec<Vec<bool>>) -
             if is_symbol(*c) {
                 let neighbors = build_neighborhood((r_idx, c_idx));
                 let symbol_parts = get_parts_near_symbol(&neighbors, schematic, visited);
-                symbol_parts.iter().for_each(|x| { part_numbers.push(x.clone()) });
+                symbol_parts
+                    .iter()
+                    .for_each(|x| part_numbers.push(x.clone()));
             }
         }
     }
@@ -57,48 +59,64 @@ fn find_gear_ratios(schematic: &Vec<Vec<char>>, visited: &mut Vec<Vec<bool>>) ->
             if is_symbol(*c) {
                 let neighbors = build_neighborhood((r_idx, c_idx));
                 let symbol_parts = get_gear_ratio_near_symbol(&neighbors, schematic, visited);
-                symbol_parts.iter().for_each(|x| { gear_ratios.push(x.clone()) });
+                symbol_parts
+                    .iter()
+                    .for_each(|x| gear_ratios.push(x.clone()));
             }
         }
     }
     gear_ratios.iter().sum::<u32>()
-
 }
-fn get_parts_near_symbol(neighbors: &HashSet<(usize, usize)>, schematic: &Vec<Vec<char>>, visited: &mut Vec<Vec<bool>>) -> Vec<u32>{
+fn get_parts_near_symbol(
+    neighbors: &HashSet<(usize, usize)>,
+    schematic: &Vec<Vec<char>>,
+    visited: &mut Vec<Vec<bool>>,
+) -> Vec<u32> {
     neighbors
         .iter()
         .map(|x| {
             if schematic[x.0][x.1].is_numeric() && visited[x.0][x.1] != true {
                 let loc = find_start_and_end((x.0, x.1), &schematic);
-                visited[loc.0][loc.1.0..loc.1.1]
+                visited[loc.0][loc.1 .0..loc.1 .1]
                     .iter_mut()
                     .for_each(|mut x| *x = true);
-                Some(concat(&schematic[loc.0][loc.1.0..loc.1.1]))
+                Some(concat(&schematic[loc.0][loc.1 .0..loc.1 .1]))
             } else {
                 None
             }
         })
         .filter(Option::is_some)
-        .map(|x| x.unwrap()).collect::<Vec<u32>>()
+        .map(|x| x.unwrap())
+        .collect::<Vec<u32>>()
 }
-fn get_gear_ratio_near_symbol(neighbors: &HashSet<(usize, usize)>, schematic: &Vec<Vec<char>>, visited: &mut Vec<Vec<bool>>) -> Option<u32>{
+fn get_gear_ratio_near_symbol(
+    neighbors: &HashSet<(usize, usize)>,
+    schematic: &Vec<Vec<char>>,
+    visited: &mut Vec<Vec<bool>>,
+) -> Option<u32> {
     let parts = neighbors
         .iter()
         .map(|x| {
             if schematic[x.0][x.1].is_numeric() && visited[x.0][x.1] != true {
                 let loc = find_start_and_end((x.0, x.1), &schematic);
-                visited[loc.0][loc.1.0..loc.1.1]
+                visited[loc.0][loc.1 .0..loc.1 .1]
                     .iter_mut()
                     .for_each(|mut x| *x = true);
-                Some((concat(&schematic[loc.0][loc.1.0..loc.1.1]), (loc.0, (loc.1.0, loc.1.1))))
+                Some((
+                    concat(&schematic[loc.0][loc.1 .0..loc.1 .1]),
+                    (loc.0, (loc.1 .0, loc.1 .1)),
+                ))
             } else {
                 None
             }
         })
         .filter(Option::is_some)
-        .map(|x| x.unwrap()).collect::<Vec<(u32, (usize, (usize, usize)))>>();
+        .map(|x| x.unwrap())
+        .collect::<Vec<(u32, (usize, (usize, usize)))>>();
     parts.iter().for_each(|(_, (row, (start, end)))| {
-        visited[*row][*start..*end].iter_mut().for_each(|mut x| {*x = false})
+        visited[*row][*start..*end]
+            .iter_mut()
+            .for_each(|mut x| *x = false)
     });
     if parts.len() == 2 {
         return Some(parts[0].0 * parts[1].0);
@@ -144,7 +162,7 @@ fn find_start_and_end(loc: (usize, usize), line: &Vec<Vec<char>>) -> (usize, (us
     //     "{:?}",
     //     &line[loc.1.saturating_sub(rev_offset)..loc.1 + forward_offset]
     // );
-    return (loc.0, (loc.1 - rev_offset, loc.1 + forward_offset))
+    return (loc.0, (loc.1 - rev_offset, loc.1 + forward_offset));
 }
 fn build_neighborhood(loc: (usize, usize)) -> HashSet<(usize, usize)> {
     let mut neighbors = HashSet::new();
