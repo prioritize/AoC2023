@@ -45,9 +45,10 @@ fn parse_file(fname: &str) {
         .into_iter()
         .map(|m| (m.source.clone(), m))
         .collect();
-    let overall_map = OverallMap{big_map:garden_maps};
+    let overall_map = OverallMap {
+        big_map: garden_maps,
+    };
     println!("{}", overall_map.evaluate_seed("seed", 79));
-    // println!("{:?}", garden_maps.get("soil").unwrap())
 }
 
 #[derive(Debug)]
@@ -56,10 +57,78 @@ struct GardenMap {
     destination: String,
     ranges: Vec<(Range<u32>, Range<u32>)>,
 }
+struct Seed {
+    current: u32,
+    stage: String,
+}
+impl Seed {
+    fn next(&mut self) -> Option<String> {
+        return match self.stage.as_str() {
+            "seed" => {
+                self.stage = String::from("soil");
+                Some((String::from("soil")))
+            }
+            "soil" => {
+                self.stage = String::from("fertilizer");
+                Some((String::from("soil")))
+            }
+            "fertilizer" => {
+                self.stage = String::from("water");
+                Some((String::from("soil")))
+            }
+            "water" => {
+                self.stage = String::from("light");
+                Some((String::from("soil")))
+            }
+            "light" => {
+                self.stage = String::from("temperature");
+                Some((String::from("soil")))
+            }
+            "temperature" => {
+                self.stage = String::from("humidity");
+                Some((String::from("soil")))
+            }
+            "humidity" => {
+                self.stage = String::from("location");
+                Some((String::from("soil")))
+            }
+            "location" => None,
+            _ => {None}
+        }
+    }
+}
 struct OverallMap {
     big_map: HashMap<String, GardenMap>,
 }
 impl OverallMap {
+    fn iterate_mapping(&self, current_map: &str, current_value: u32) -> (String, u32) {
+        let mapping = self.big_map.get(current_map).unwrap();
+        match self.get_range(current_map, current_value) {
+            Some(r) => {
+
+            }
+            None => {
+
+            }
+        }
+        todo!()
+    }
+    fn get_destination_value(r: Option<&(Range<u32>, Range<u32>)>, current_value: u32) -> u32 {
+        return match r {
+            None => {r}
+            Some => {
+                let offset = seed
+            }
+        }
+        todo!()
+    }
+    fn get_range(&self, current_map: &str, current_value: u32) -> Option<&(Range<u32>, Range<u32>)> {
+        return match self.big_map.get(current_map).unwrap().ranges.iter().find_or_first(|x| {x.1.contains(&current_value)}) {
+            None => {None}
+            Some(r) => {Some(r)}
+        }
+
+    }
     fn evaluate_seed(&self, source: &str, seed: u32) -> u32 {
         let seed_range: Vec<&(Range<u32>, Range<u32>)> = self
             .big_map
@@ -68,28 +137,28 @@ impl OverallMap {
             .ranges
             .iter()
             .map(|x| match x.0.contains(&seed) {
-                true => {Some(x)}
-                false => {None}
-            }).flatten()
+                true => Some(x),
+                false => None,
+            })
+            .flatten()
             .collect();
-        let mut mapped_value= 0;
+        let mut mapped_value = 0;
         match seed_range.len() {
             0 => {
-               mapped_value = seed;
+                mapped_value = seed;
                 println!("Found None: {}", mapped_value);
             }
             1 => {
-                println!("Seed Range: {:?}", seed_range);
                 let seed_range = seed_range[0];
                 println!("Seed Range: {:?}", seed_range);
                 let offset = seed - seed_range.0.start;
                 println!("Offset: {:?}", offset);
                 mapped_value = seed_range.1.start + offset;
             }
-            _ => panic!("shouldn't be getting more than 1")
+            _ => panic!("shouldn't be getting more than 1"),
         }
         println!("{}", self.big_map.get(source).unwrap().destination);
-        println!("")
+        // println!("")
         match self.big_map.get(source).unwrap().destination.as_str() {
             "soil" => self.evaluate_seed("soil", mapped_value),
             "fertilizer" => self.evaluate_seed("fertilizer", mapped_value),
