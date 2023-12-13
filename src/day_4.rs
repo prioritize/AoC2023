@@ -6,6 +6,7 @@ use std::io::{BufRead, BufReader};
 use std::ops::Add;
 
 type Game = Vec<(u32, HashSet<u32>, HashSet<u32>)>;
+
 fn parse_input(fname: &str) -> Game {
     let file = File::open(fname).expect(format!("couldn't open {}", fname).as_str());
     BufReader::new(file)
