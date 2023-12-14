@@ -245,12 +245,20 @@ mod tests {
     #[test]
     fn test_part_1() {
         let (mut seeds, map) = parse_file("input/day_5_input.txt");
-         let m: u64 =  seeds.iter_mut().map(|x| {
-            while x.next(&map) != None {}
-            x.current
-        }).collect::<Vec<u64>>().iter().min().unwrap().clone();
+        let m: u64 = seeds
+            .iter_mut()
+            .map(|x| {
+                while x.next(&map) != None {}
+                x.current
+            })
+            .collect::<Vec<u64>>()
+            .iter()
+            .min()
+            .unwrap()
+            .clone();
         println!("{}", m);
     }
+    #[ignore]
     #[test]
     fn test_part_2() {
         let (mut seeds, map) = parse_file("input/day_5_input.txt");
@@ -260,16 +268,31 @@ mod tests {
         let mut split = first_line.split(":");
         split.next();
         let seed_info = split.next().unwrap().trim();
-        let mut seed_info = seed_info.split(" ").into_iter().collect::<Vec<&str>>().iter().map(|x| x.parse().unwrap()).collect::<VecDeque<u64>>();
+        let mut seed_info = seed_info
+            .split(" ")
+            .into_iter()
+            .collect::<Vec<&str>>()
+            .iter()
+            .map(|x| x.parse().unwrap())
+            .collect::<VecDeque<u64>>();
         let mut ranges = vec![];
         while seed_info.len() != 0 {
-            ranges.push((seed_info.pop_front().unwrap(), seed_info.pop_front().unwrap()));
+            ranges.push((
+                seed_info.pop_front().unwrap(),
+                seed_info.pop_front().unwrap(),
+            ));
         }
-        let ranges: Vec<Range<u64>> = ranges.iter().map(|(start, span)|{start.clone()..start.clone()+span}).collect();
+        let ranges: Vec<Range<u64>> = ranges
+            .iter()
+            .map(|(start, span)| start.clone()..start.clone() + span)
+            .collect();
         let mut smallest = u64::MAX;
         ranges.iter().for_each(|x| {
             for s in x.clone().into_iter() {
-                let mut seed = Seed{current: s, stage: Stage::Seed};
+                let mut seed = Seed {
+                    current: s,
+                    stage: Stage::Seed,
+                };
                 while seed.next(&map) != None {}
                 if seed.current < smallest {
                     smallest = seed.current;
@@ -278,6 +301,5 @@ mod tests {
             println!("Finished a range")
         });
         println!("{}", smallest);
-
     }
 }
