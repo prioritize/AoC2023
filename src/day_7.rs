@@ -12,7 +12,7 @@ impl Card {
             'A' => Card::gen_new(14),
             'K' => Card::gen_new(13),
             'Q' => Card::gen_new(12),
-            'J' => Card::gen_new(11),
+            'J' => Card::gen_new(1),
             'T' => Card::gen_new(10),
             '9' => Card::gen_new(9),
             '8' => Card::gen_new(8),
@@ -89,155 +89,94 @@ impl PartialOrd for Hand {
         }
     }
 }
-//         ordering
-//     }
-// }
 impl Hand {
     fn new(incoming: &str) -> Self {
         let mut s = incoming.split(" ");
         let hand = s.next().unwrap();
         let cards: Vec<Card> = hand.chars().map(|s| Card::new(s)).collect();
         let bid = s.next().unwrap().parse().unwrap();
-        let rank = Hand::determine_ranking(hand);
+        let rank = determine_ranking(hand);
         Hand { cards, rank, bid }
     }
-    fn determine_ranking_with_wilds(hand: &str) -> crate::day_7::Ranking {
-        let mut hm = HashMap::new();
-        _ = hand
-            .chars()
-            .into_iter()
-            .map(|x| match hm.contains_key(&x) {
-                true => {
-                    *hm.get_mut(&x).unwrap() += 1;
-                }
-                false => {
-                    hm.insert(x, 1);
-                }
-            })
-            .collect::<Vec<_>>();
-        let mut num_j = 0;
-        let mut highest: (&char, &u32) = (&' ', &0);
-        // let mut highest_count: u32 = 0;
-        hm.iter().for_each(|(k, v)| {
-            match k == 'J' {
-                true => {
-                    num_j = v.clone();
-                }
-                false => {
-                    if v > highest.1 {
-                        highest = (k, v)
-                    }
-                }
-            }
-        });
-        if num_j != 0 {
-            hm.remove(&'j').unwrap();
-            *hm.get_mut(&highest.0).unwrap() += highest.1;
-        }
-        // The logic here says that based on the number of entries in the hashmap we can
-        // determine which type of hand we're dealing with
-        return match hm.len() {
-            5 => crate::day_7::Ranking::HighCard,
-            4 => crate::day_7::Ranking::OnePair,
-            3 => match hm.iter().map(|(k, v)| v).max().unwrap() {
-                &3 => crate::day_7::Ranking::ThreeOfAKind,
-                &2 => crate::day_7::Ranking::TwoPair,
-                _ => {
-                    panic!("Shouldn't have more than 3 or less than 2")
-                }
-            },
-            2 => {
-                match hm.iter().map(|(k, v)| v).max().unwrap() {
-                    &4 => crate::day_7::Ranking::FourOfAKind,
-                    &3 => crate::day_7::Ranking::FullHouse,
-                    _ => {
-                        panic!("Shouldn't have more than 4 or less than 3")
-                    } //TODO: Split between four of a kind and a full house}
-                }
-            }
-            1 => crate::day_7::Ranking::FiveOfAKind,
-            _ => {
-                println!("I was unable to determine a hand, this shouldn't happen");
-                crate::day_7::Ranking::Undetermined
-            }
-        }
-    }
-    fn load_hashmap(hand: &str) -> HashMap<char, u32> {
-        let mut hm = HashMap::new();
-        _ = hand
-            .chars()
-            .into_iter()
-            .map(|x| match hm.contains_key(&x) {
-                true => {
-                    *hm.get_mut(&x).unwrap() += 1;
-                }
-                false => {
-                    hm.insert(x, 1);
-                }
-            })
-            .collect::<Vec<_>>();
-        hm
-    }
-    fn determine_hand_type(hm: HashMap<char, u32>) -> Ranking {
-        return match hm.len() {
-            5 => crate::day_7::Ranking::HighCard,
-            4 => crate::day_7::Ranking::OnePair,
-            3 => match hm.iter().map(|(k, v)| v).max().unwrap() {
-                &3 => crate::day_7::Ranking::ThreeOfAKind,
-                &2 => crate::day_7::Ranking::TwoPair,
-                _ => {
-                    panic!("Shouldn't have more than 3 or less than 2")
-                }
-            },
-            2 => {
-                match hm.iter().map(|(k, v)| v).max().unwrap() {
-                    &4 => crate::day_7::Ranking::FourOfAKind,
-                    &3 => crate::day_7::Ranking::FullHouse,
-                    _ => {
-                        panic!("Shouldn't have more than 4 or less than 3")
-                    } //TODO: Split between four of a kind and a full house}
-                }
-            }
-            1 => crate::day_7::Ranking::FiveOfAKind,
-            _ => {
-                println!("I was unable to determine a hand, this shouldn't happen");
-                crate::day_7::Ranking::Undetermined
-            }
-        };
+    fn new_wild(incoming: &str) -> Self {
+        let mut s = incoming.split(" ");
+        let hand = s.next().unwrap();
+        let cards: Vec<Card> = hand.chars().map(|s| Card::new(s)).collect();
+        let bid = s.next().unwrap().parse().unwrap();
+        let rank = determine_ranking_with_wilds(hand);
+        Hand { cards, rank, bid }
     }
 }
-
-    fn determine_ranking(hand: &str) -> Ranking {
-        let mut hm = Hand::load_hashmap(hand);
-
-        // The logic here says that based on the number of entries in the hashmap we can
-        // determine which type of hand we're dealing with
-        return match hm.len() {
-            5 => Ranking::HighCard,
-            4 => Ranking::OnePair,
-            3 => match hm.iter().map(|(k, v)| v).max().unwrap() {
-                &3 => Ranking::ThreeOfAKind,
-                &2 => Ranking::TwoPair,
-                _ => {
-                    panic!("Shouldn't have more than 3 or less than 2")
-                }
-            },
-            2 => {
-                match hm.iter().map(|(k, v)| v).max().unwrap() {
-                    &4 => Ranking::FourOfAKind,
-                    &3 => Ranking::FullHouse,
-                    _ => {
-                        panic!("Shouldn't have more than 4 or less than 3")
-                    } //TODO: Split between four of a kind and a full house}
-                }
+fn determine_ranking_with_wilds(hand: &str) -> crate::day_7::Ranking {
+    let mut hm = load_hashmap(hand);
+    let mut num_j = 0;
+    let mut highest: (char, u32) = (' ', 0);
+    // let mut highest_count: u32 = 0;
+    hm.iter().for_each(|(k, v)| match k == &'J' {
+        true => {
+            num_j = v.clone();
+        }
+        false => {
+            if v > &highest.1 {
+                highest = (k.clone(), v.clone())
             }
-            1 => Ranking::FiveOfAKind,
-            _ => {
-                println!("I was unable to determine a hand, this shouldn't happen");
-                Ranking::Undetermined
-            }
-        };
+        }
+    });
+    println!("{}, {}", hand, num_j);
+    if num_j != 0 && num_j != 5 {
+        hm.remove(&'J').unwrap();
+        *hm.get_mut(&highest.0).unwrap() += num_j;
     }
+    return determine_hand_type(hm)
+}
+fn load_hashmap(hand: &str) -> HashMap<char, u32> {
+    let mut hm = HashMap::new();
+    _ = hand
+        .chars()
+        .into_iter()
+        .map(|x| match hm.contains_key(&x) {
+            true => {
+                *hm.get_mut(&x).unwrap() += 1;
+            }
+            false => {
+                hm.insert(x, 1);
+            }
+        })
+        .collect::<Vec<_>>();
+    hm
+}
+fn determine_hand_type(hm: HashMap<char, u32>) -> Ranking {
+    println!("{:?}", hm);
+    return match hm.len() {
+        5 => crate::day_7::Ranking::HighCard,
+        4 => crate::day_7::Ranking::OnePair,
+        3 => match hm.iter().map(|(k, v)| v).max().unwrap() {
+            &3 => crate::day_7::Ranking::ThreeOfAKind,
+            &2 => crate::day_7::Ranking::TwoPair,
+            _ => {
+                panic!("Shouldn't have more than 3 or less than 2")
+            }
+        },
+        2 => {
+            match hm.iter().map(|(k, v)| v).max().unwrap() {
+                &4 => crate::day_7::Ranking::FourOfAKind,
+                &3 => crate::day_7::Ranking::FullHouse,
+                _ => {
+                    panic!("Shouldn't have more than 4 or less than 3")
+                } //TODO: Split between four of a kind and a full house}
+            }
+        }
+        1 => crate::day_7::Ranking::FiveOfAKind,
+        _ => {
+            println!("I was unable to determine a hand, this shouldn't happen");
+            crate::day_7::Ranking::Undetermined
+        }
+    };
+}
+
+fn determine_ranking(hand: &str) -> Ranking {
+    let mut hm = load_hashmap(hand);
+    return determine_hand_type(hm);
 }
 
 #[derive(Debug, Eq)]
@@ -312,10 +251,15 @@ mod tests {
         // println!("{:?}", hands);
         // hands.iter().for_each(|x| println!("Rank: {:?} - Hand: {:?}", x.rank, x.cards ));
         let mut offset = 1;
-        let winnings: u64 = hands.iter().map(|(j)| {
-            offset +=1;
-            ((offset-1) * j.bid) as u64
-        }).collect::<Vec<u64>>().iter().sum();
+        let winnings: u64 = hands
+            .iter()
+            .map(|(j)| {
+                offset += 1;
+                ((offset - 1) * j.bid) as u64
+            })
+            .collect::<Vec<u64>>()
+            .iter()
+            .sum();
         println!("winnings: {}", winnings);
     }
     #[test]
@@ -329,10 +273,59 @@ mod tests {
         // println!("{:?}", hands);
         // hands.iter().for_each(|x| println!("Rank: {:?} - Hand: {:?}", x.rank, x.cards ));
         let mut offset = 1;
-        let winnings: u64 = hands.iter().map(|(j)| {
-            offset +=1;
-            ((offset-1) * j.bid) as u64
-        }).collect::<Vec<u64>>().iter().sum();
+        let winnings: u64 = hands
+            .iter()
+            .map(|(j)| {
+                offset += 1;
+                ((offset - 1) * j.bid) as u64
+            })
+            .collect::<Vec<u64>>()
+            .iter()
+            .sum();
+        println!("winnings: {}", winnings);
+    }
+    #[test]
+    fn test_part_2_example() {
+        let file = File::open("input/day_7_example.txt").unwrap();
+        let mut lines = BufReader::new(file).lines();
+        let mut hands: Vec<Hand> = lines.into_iter().map(|l| Hand::new_wild(&l.unwrap())).collect();
+        // hands.iter().for_each(|x| {println!("{:?}", x.rank)});
+        // println!("{}", Ranking::FiveOfAKind > Ranking::FourOfAKind);
+        hands.sort();
+        // println!("{:?}", hands);
+        // hands.iter().for_each(|x| println!("Rank: {:?} - Hand: {:?}", x.rank, x.cards ));
+        let mut offset = 1;
+        let winnings: u64 = hands
+            .iter()
+            .map(|(j)| {
+                offset += 1;
+                ((offset - 1) * j.bid) as u64
+            })
+            .collect::<Vec<u64>>()
+            .iter()
+            .sum();
+        println!("winnings: {}", winnings);
+    }
+    #[test]
+    fn test_part_2() {
+        let file = File::open("input/day_7_input.txt").unwrap();
+        let mut lines = BufReader::new(file).lines();
+        let mut hands: Vec<Hand> = lines.into_iter().map(|l| Hand::new_wild(&l.unwrap())).collect();
+        // hands.iter().for_each(|x| {println!("{:?}", x.rank)});
+        // println!("{}", Ranking::FiveOfAKind > Ranking::FourOfAKind);
+        hands.sort();
+        // println!("{:?}", hands);
+        // hands.iter().for_each(|x| println!("Rank: {:?} - Hand: {:?}", x.rank, x.cards ));
+        let mut offset = 1;
+        let winnings: u64 = hands
+            .iter()
+            .map(|(j)| {
+                offset += 1;
+                ((offset - 1) * j.bid) as u64
+            })
+            .collect::<Vec<u64>>()
+            .iter()
+            .sum();
         println!("winnings: {}", winnings);
     }
 }
