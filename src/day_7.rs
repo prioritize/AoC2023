@@ -127,7 +127,7 @@ fn determine_ranking_with_wilds(hand: &str) -> crate::day_7::Ranking {
         hm.remove(&'J').unwrap();
         *hm.get_mut(&highest.0).unwrap() += num_j;
     }
-    return determine_hand_type(hm)
+    return determine_hand_type(hm);
 }
 fn load_hashmap(hand: &str) -> HashMap<char, u32> {
     let mut hm = HashMap::new();
@@ -288,7 +288,10 @@ mod tests {
     fn test_part_2_example() {
         let file = File::open("input/day_7_example.txt").unwrap();
         let mut lines = BufReader::new(file).lines();
-        let mut hands: Vec<Hand> = lines.into_iter().map(|l| Hand::new_wild(&l.unwrap())).collect();
+        let mut hands: Vec<Hand> = lines
+            .into_iter()
+            .map(|l| Hand::new_wild(&l.unwrap()))
+            .collect();
         // hands.iter().for_each(|x| {println!("{:?}", x.rank)});
         // println!("{}", Ranking::FiveOfAKind > Ranking::FourOfAKind);
         hands.sort();
@@ -310,7 +313,10 @@ mod tests {
     fn test_part_2() {
         let file = File::open("input/day_7_input.txt").unwrap();
         let mut lines = BufReader::new(file).lines();
-        let mut hands: Vec<Hand> = lines.into_iter().map(|l| Hand::new_wild(&l.unwrap())).collect();
+        let mut hands: Vec<Hand> = lines
+            .into_iter()
+            .map(|l| Hand::new_wild(&l.unwrap()))
+            .collect();
         // hands.iter().for_each(|x| {println!("{:?}", x.rank)});
         // println!("{}", Ranking::FiveOfAKind > Ranking::FourOfAKind);
         hands.sort();
