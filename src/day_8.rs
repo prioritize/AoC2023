@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+// #![feature_iter_collect_into)]
 
 struct Node {
     value: String,
@@ -12,13 +13,20 @@ impl Node {
     fn new(l: &str) -> Self {
         parse_node(l)
     }
+    fn next(&self, d: char, nodes: &Nodes) -> Option<&Node> {
+        return match d {
+            'L' => {nodes.get(&self.left)}
+            'R' => {nodes.get(&self.right)}
+            _ => panic!("Shouldn't be here in Node::next()")
+        }
+    }
 }
 struct Nodes {
     nodes: BTreeMap<String, Node>,
 }
 impl Nodes {
-    fn next(&self, d: char) -> Option<Node> {
-        self.nodes.get()
+    fn get(&self, key: &String) -> Option<&Node> {
+        self.nodes.get(key)
     }
 }
 fn parse_file(fname: &str) -> (String, BTreeMap<String, (String, String)>) {
@@ -135,13 +143,12 @@ mod tests {
     #[test]
     fn find_nodes_end_with_a() {
         let (instructions, nodes) = parse_file("input/day_8_example_1.txt");
-        let mut starting_points: Vec<&(String, &(String, String))> = nodes.iter().filter(|(k, v)| {k.chars().last().unwrap() == 'A'}).collect();
-        let route_lengths = starting_points.iter().map(|x| {
-            let mut stop = false;
-            while !stop {
-                match next(x, )
-            }
-        }).collect();
+        let nodes: BTreeMap<String, (String, String)> = nodes.iter_mut().map(move |(k, v)| {(*k, *v)}).collect_into();
+        // let mut starting_points: Vec<Node> = nodes.iter().filter(|x|).collect();
+        // let route_lengths = starting_points.iter_mut().map(|x| {
+        //     let mut stop = false;
+        //
+        // }).collect();
 
     }
 }
