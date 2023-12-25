@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 // #![feature_iter_collect_into)]
 
+#[derive(Clone, Debug)]
 struct Node {
     value: String,
     left: String,
@@ -13,7 +14,7 @@ impl Node {
     fn new(l: &str) -> Self {
         parse_node(l)
     }
-    fn next(&self, d: char, nodes: &Nodes) -> Option<&Node> {
+    fn next<'a>(&self, d: char, nodes: &'a Nodes) -> Option<&'a Node> {
         return match d {
             'L' => {nodes.get(&self.left)}
             'R' => {nodes.get(&self.right)}
@@ -27,6 +28,11 @@ struct Nodes {
 impl Nodes {
     fn get(&self, key: &String) -> Option<&Node> {
         self.nodes.get(key)
+    }
+    fn starting_points(&self, character: char) -> Vec<Node> {
+        self.nodes.iter().filter(|(k, v)| {
+            v.value.chars().last().unwrap() == character
+        }).map(|(k, v)|{v.clone()}).collect()
     }
 }
 fn parse_file(fname: &str) -> (String, BTreeMap<String, (String, String)>) {
@@ -125,6 +131,7 @@ fn compare(points: &Vec<String>, ) -> bool {
 }
 #[cfg(test)]
 mod tests {
+    use std::collections::VecDeque;
     use super::*;
     use crate::day_8::{find_steps, parse_file};
 
@@ -142,9 +149,23 @@ mod tests {
     }
     #[test]
     fn find_nodes_end_with_a() {
-        let (instructions, nodes) = parse_file("input/day_8_example_1.txt");
-        let nodes: BTreeMap<String, (String, String)> = nodes.iter_mut().map(move |(k, v)| {(*k, *v)}).collect_into();
-        // let mut starting_points: Vec<Node> = nodes.iter().filter(|x|).collect();
+        let (instructions, nodes) = parse_file("input/day_8_input.txt");
+        let nodes: BTreeMap<String, Node> = nodes.into_iter().map(|(k, v)|{
+            Node{value: k, left: v.0, right: v.1}
+        }).collect::<Vec<Node>>().into_iter().map(|x|{
+            (x.value.clone(), x)}
+        ).collect();
+        let instructions = instructions.chars().collect::<VecDeque<char>>();
+
+        let nodes = Nodes{nodes};
+
+        let mut starting_points: Vec<Node> = nodes.starting_points('A');
+        starting_points.iter().map(|x| {
+            let mut current = 
+            let mut current_instructions = instructions.clone();
+        })
+        println!("{:?}", starting_points);
+
         // let route_lengths = starting_points.iter_mut().map(|x| {
         //     let mut stop = false;
         //

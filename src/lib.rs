@@ -1,4 +1,5 @@
 #![feature(str_split_whitespace_remainder)]
+#![feature(iter_collect_into)]
 
 mod day_1;
 mod day_2;
