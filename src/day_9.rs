@@ -89,9 +89,12 @@ fn predict(stages: &mut Vec<Vec<i32>>, values: &mut Vec<i32>) {
     println!("{:?}", values);
 }
 fn calculate_extrapolated_values(report: &mut Vec<Vec<i32>>) -> i32 {
-    report.iter_mut().map(|entry| {
-        predict_entry(entry)
-    }).collect::<Vec<i32>>().iter().sum()
+    report
+        .iter_mut()
+        .map(|entry| predict_entry(entry))
+        .collect::<Vec<i32>>()
+        .iter()
+        .sum()
 }
 #[cfg(test)]
 mod tests {
