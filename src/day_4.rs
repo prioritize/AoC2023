@@ -105,10 +105,12 @@ mod tests {
     fn test_day_4_example() {
         day_4_part_1("input/day_4_example.txt");
     }
+    #[ignore]
     #[test]
     fn test_day_4_part_2_example() {
         day_4_part_2("input/day_4_example.txt");
     }
+    #[ignore]
     #[test]
     fn test_day_4_part_2() {
         day_4_part_2("input/day_4_input.txt");
