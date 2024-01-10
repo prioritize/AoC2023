@@ -15,8 +15,8 @@ enum Segments {
     Dot,
 }
 struct Layout {
-    pipes: BTreeMap<Posit, Segments>,
-    visited: BTreeMap<Posit, bool>,
+    pipes: HashMap<Posit, Segments>,
+    visited: HashMap<Posit, bool>,
     starting: (usize, usize),
 }
 impl Layout {
@@ -29,9 +29,15 @@ impl Layout {
         todo!();
     }
 }
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct Posit {
-    r: usize,
-    c: usize,
+    r: i32,
+    c: i32,
+}
+impl Display for Posit {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Posit ({}, {})", self.r, self.c)
+    }
 }
 impl Display for Segments {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -63,10 +69,45 @@ impl Display for Segments {
         }
     }
 }
-fn parse(fname: &str) -> HashMap<(usize, usize), Segments> {
+fn process(pipeline: HashMap<Posit, Segments>, start: Posit, dims: (i32, i32)) {
+    let mut current = start;
+    let mut counter = 0;
+    let mut stack = vec![];
+    let mut seen_start = false;
+    let mut visited = pipeline.iter().map(|(p, s) |{
+        (p.clone(), false)
+    }).collect();
+    loop {
+        stack.append(&mut current.neighbors(&visited, dims));
+        *visited.get_mut(&current).unwrap() = true;
+        counter+=1;
+        match pipeline.get(&current) {
+            None => {
+                panic!("Shouldn't get here");
+            }
+            Some(s) => {
+                match s {
+                    Segments::Start => {
+                        if seen_start == false {
+                            seen_start = true;
+                        } else {
+                            break
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+        current = stack.pop().unwrap();
+        println!("counter: {}", counter);
+    }
+
+}
+fn parse(fname: &str) -> (HashMap<Posit, Segments>, Posit, (i32, i32)) {
     let file = File::open(fname).expect(&format!("unable to open {}", fname));
     let lines = BufReader::new(file).lines();
-    let mut entries: Vec<Vec<((usize, usize), Segments)>> = lines
+    let mut start: Posit = Posit { r: 0, c: 0 };
+    let mut entries: Vec<Vec<(Posit, Segments)>> = lines
         .enumerate()
         .map(|(r_idx, l)| {
             return l
@@ -74,14 +115,18 @@ fn parse(fname: &str) -> HashMap<(usize, usize), Segments> {
                 .chars()
                 .enumerate()
                 .map(|(c_idx, c)| match c {
-                    '|' => ((r_idx, c_idx), Segments::Pipe),
-                    '-' => ((r_idx, c_idx), Segments::Dash),
-                    'L' => ((r_idx, c_idx), Segments::L),
-                    'J' => ((r_idx, c_idx), Segments::J),
-                    'F' => ((r_idx, c_idx), Segments::F),
-                    '7' => ((r_idx, c_idx), Segments::Seven),
-                    'S' => ((r_idx, c_idx), Segments::Start),
-                    '.' => ((r_idx, c_idx), Segments::Dot),
+                    '|' => (Posit { r: r_idx as i32, c: c_idx as i32 }, Segments::Pipe),
+                    '-' => (Posit { r: r_idx as i32, c: c_idx as i32 }, Segments::Dash),
+                    'L' => (Posit { r: r_idx as i32, c: c_idx as i32 }, Segments::L),
+                    'J' => (Posit { r: r_idx as i32, c: c_idx as i32 }, Segments::J),
+                    'F' => (Posit { r: r_idx as i32, c: c_idx as i32 }, Segments::F),
+                    '7' => (Posit { r: r_idx as i32, c: c_idx as i32 }, Segments::Seven),
+                    'S' => {
+                        let start_loc = (Posit { r: r_idx as i32, c: c_idx as i32 }, Segments::Start);
+                        start = start_loc.0.clone();
+                        start_loc
+                    }
+                    '.' => (Posit { r: r_idx as i32, c: c_idx as i32 }, Segments::Dot),
                     _ => {
                         panic!("Shouldn't get here")
                     }
@@ -89,9 +134,49 @@ fn parse(fname: &str) -> HashMap<(usize, usize), Segments> {
                 .collect();
         })
         .collect();
-    entries.into_iter().flatten().collect::<Vec<((usize,usize), Segments)>>().into_iter().collect()
+    let dims = (entries.len() as i32, entries[0].len() as i32);
+    (
+        entries
+            .into_iter()
+            .flatten()
+            .collect::<Vec<(Posit, Segments)>>()
+            .into_iter()
+            .collect(),
+        start,
+        dims
+    )
 }
-fn neighbors() {}
+impl Posit {
+    // TODO: This function should only generate 4 possible neighbors, as diagonals aren't valid
+    // TODO: Consider checking the values here and validating that the path can continue (has a valid direction/ character)
+    fn neighbors(&self, visited: &HashMap<Posit, bool>, dims: (i32, i32)) -> Vec<Posit> {
+        let mut out = vec![];
+        for r in -1..2 {
+            for c in -1..2 {
+                let r_idx = self.r + r;
+                let c_idx = self.c + c;
+                if r_idx == self.r && c_idx == self.c {
+                    continue
+                }
+                match r_idx < dims.0 && r_idx >= 0 && c_idx < dims.1 && c_idx >= 0 {
+                    true => {
+                        let p = Posit{r: r_idx, c: c_idx};
+                        match visited.get(&p).unwrap() {
+                            false => {out.push(p)}
+                            true => {}
+                        }
+                    }
+                    false => {}
+                }
+            }
+        }
+        out
+    }
+    fn new(r: i32, c: i32) -> Self {
+        Posit {r, c}
+
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -99,6 +184,31 @@ mod tests {
     #[test]
     fn test_parse() {
         let segments = parse("input/day_10_input.txt");
-        println!("{:?}", segments);
+        println!("{:?}", segments.1);
+    }
+    #[test]
+    fn test_neighbors() {
+        let segments = parse("input/day_10_input.txt");
+        let visited = segments.0.iter().map(|(p, s) |{
+            (p.clone(), false)
+        }).collect();
+        let p = Posit{r: 0, c: 0};
+        let n = p.neighbors(&visited, segments.2);
+        let answer = vec![Posit{r:0, c:1}, Posit{r:1, c:0}, Posit{r: 1, c:1}];
+        assert_eq!(answer, n);
+        let p = Posit::new(10, 10);
+        let n = p.neighbors(&visited, segments.2);
+        let answer = vec![
+            Posit{r: 9, c: 9}, Posit{r:9, c:10}, Posit{r:9, c:11},
+            Posit{r: 10, c: 9}, Posit{r:10, c:11},
+            Posit{r: 11, c: 9}, Posit{r:11, c:10}, Posit{r:11, c:11},
+        ];
+        assert_eq!(answer, n);
+    }
+    #[test]
+    fn test_process() {
+        let segments = parse("input/day_10_input.txt");
+        process(segments.0, segments.1, segments.2);
+
     }
 }
